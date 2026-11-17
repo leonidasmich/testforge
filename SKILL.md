@@ -5,7 +5,7 @@ license: MIT
 compatibility: Python 3.10+, Bash, Node.js/npm (for JS/TS projects), Pytest/JUnit/Jest/Playwright
 metadata:
   author: Leonidas Michalopoulos
-  github: leonidas_mich
+  github: leonidasmich
   website: https://leom.gr
   email: info@leom.gr
   version: 1.0.0

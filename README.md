@@ -69,7 +69,7 @@ That probe is a heuristic. It does not sandbox shell commands, block network acc
 
 ## Author
 
-Leonidas Michalopoulos · [leonidas_mich](https://github.com/leonidas_mich) · [leom.gr](https://leom.gr) · info@leom.gr
+Leonidas Michalopoulos · [leonidasmich](https://github.com/leonidasmich) · [leom.gr](https://leom.gr) · info@leom.gr
 
 ## License
 
