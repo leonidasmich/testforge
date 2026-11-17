@@ -1,0 +1,6 @@
+.testforge/
+__pycache__/
+*.py[cod]
+TESTFORGE_REPORT.md
+TESTFORGE_PLAN.md
+testforge-results.json

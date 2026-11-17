@@ -1,0 +1,35 @@
+{
+  "title": "TestForgeResults",
+  "type": "object",
+  "required": ["testforge_version", "timestamp", "summary", "test_cases"],
+  "properties": {
+    "testforge_version": { "type": "string" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "summary": {
+      "type": "object",
+      "required": ["total_tests", "passed_tests", "failed_tests", "pass_rate_percentage"],
+      "properties": {
+        "total_tests": { "type": "integer" },
+        "passed_tests": { "type": "integer" },
+        "failed_tests": { "type": "integer" },
+        "skipped_tests": { "type": "integer" },
+        "pass_rate_percentage": { "type": "number" }
+      }
+    },
+    "test_cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "status"],
+        "properties": {
+          "name": { "type": "string" },
+          "classname": { "type": "string" },
+          "status": { "type": "string", "enum": ["passed", "failed", "error", "skipped"] },
+          "duration_seconds": { "type": "number" },
+          "error_message": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}
+
