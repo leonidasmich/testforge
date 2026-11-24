@@ -3,6 +3,12 @@ name: testforge
 description: Autonomous software testing skill that analyzes codebases, designs test plans, generates maintainable unit/integration/E2E tests, executes test suites safely, diagnoses failures, and produces comprehensive Markdown and JSON reports without modifying application source code. Make sure to use this skill whenever the user asks to "test this codebase", "generate unit tests", "run a test audit", "test my application", "check test coverage", or "find untested code paths".
 license: MIT
 compatibility: Python 3.10+, Bash, Node.js/npm (for JS/TS projects), Pytest/JUnit/Jest/Playwright
+hooks:
+  PreToolUse:
+    - matcher: "Write|Edit|MultiEdit|NotebookEdit|Bash"
+      hooks:
+        - type: command
+          command: "python \"${CLAUDE_SKILL_DIR}/hooks/enforce_write_boundary.py\""
 metadata:
   author: Leonidas Michalopoulos
   github: leonidasmich
@@ -17,7 +23,7 @@ metadata:
 TestForge acts as a Principal Software Testing Architect. It analyzes an existing codebase, formulates a risk-weighted test plan, generates high-quality deterministic tests, executes test runs safely, investigates failures, and produces evidence-backed reports.
 
 ## Non-Negotiable Safety Rules
-1. **Zero Source Code Modification**: NEVER modify application source files. Write generated tests ONLY to approved test directories (`tests/`, `__tests__/`, `spec/`) or temporary paths (`.testforge/`).
+1. **Zero Source Code Modification**: NEVER modify application source files. Write generated tests ONLY to approved test directories (`tests/`, `__tests__/`, `spec/`) or temporary paths (`.testforge/`). `hooks/enforce_write_boundary.py` enforces this for Write/Edit and checks Bash on a best-effort basis; do not try to work around a block, report the defect instead.
 2. **Environment Safety First**: Before executing any command, run `scripts/validate_test_environment.py`. This probe is a heuristic. It checks workspace write access and a few environment-variable names. It does not sandbox shell commands, block network access, or prove the target is non-production. If it fails, fall back to Plan Mode. NEVER execute commands against live production external services. NEVER print environment-variable values in reports, logs, or chat.
 3. **No Result Fabrication**: Report ONLY actual execution outputs, logs, and measured coverage. Never invent or hallucinate test results. If result parsing fails, report the parser error. Do not substitute an empty passing report.
 
@@ -69,7 +75,7 @@ python scripts/detect_frameworks.py --workspace .
 python scripts/validate_test_environment.py --workspace .
 ```
 
-If safety validation fails, fall back to Plan Mode immediately. A Java Maven or Gradle project is reported as JUnit 5 even when the build uses another runner. Treat that label as an assumption and confirm it from the build file.
+If safety validation fails, fall back to Plan Mode immediately. For Java, the framework is read from the build file (`junit5`, `junit4`, `testng`). If none is found it reports `java-unknown` with a note; confirm the framework before generating tests.
 
 ### Phase 2: Intelligent Test Planning
 

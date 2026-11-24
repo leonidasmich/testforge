@@ -5,6 +5,7 @@ programming languages, testing frameworks, and execution commands.
 """
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -54,16 +55,37 @@ def detect_frameworks(workspace_dir: str) -> dict:
         except (OSError, json.JSONDecodeError):
             pass
 
-    # Check Java. JUnit 5 is an assumption for any Maven or Gradle build.
-    if (workspace / "pom.xml").exists() or (workspace / "build.gradle").exists():
+    # Check Java. The framework comes from the build file; never assume one.
+    java_builds = [n for n in ("pom.xml", "build.gradle", "build.gradle.kts") if (workspace / n).exists()]
+    if java_builds:
         results["languages"].append("java")
-        results["frameworks"].append("junit5")
-        if (workspace / "pom.xml").exists():
-            results["test_runners"].append("mvn test")
-            results["recommended_command"] = "mvn test"
+        build_text = ""
+        for name in java_builds:
+            try:
+                build_text += (workspace / name).read_text(encoding="utf-8", errors="replace").lower()
+            except OSError:
+                pass
+        java_fw = []
+        if "junit-jupiter" in build_text or "org.junit.jupiter" in build_text:
+            java_fw.append("junit5")
+        if "junit:junit" in build_text or re.search(r"<groupid>\s*junit\s*</groupid>", build_text):
+            java_fw.append("junit4")
+        if "testng" in build_text:
+            java_fw.append("testng")
+        if java_fw:
+            results["frameworks"].extend(java_fw)
         else:
-            results["test_runners"].append("./gradlew test")
-            results["recommended_command"] = "./gradlew test"
+            results["frameworks"].append("java-unknown")
+            results.setdefault("notes", []).append(
+                "Java build found but no JUnit 5, JUnit 4, or TestNG dependency detected. "
+                "Confirm the test framework from the build file before generating tests."
+            )
+        if (workspace / "pom.xml").exists():
+            cmd = "./mvnw test" if (workspace / "mvnw").exists() else "mvn test"
+        else:
+            cmd = "./gradlew test" if (workspace / "gradlew").exists() else "gradle test"
+        results["test_runners"].append(cmd)
+        results["recommended_command"] = cmd
 
     # Identify test directories
     for possible_dir in ["tests", "__tests__", "test", "spec", "src/test"]:
